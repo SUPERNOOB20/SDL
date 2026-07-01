@@ -18,13 +18,13 @@
 #include <SDL3/SDL.h>
 #include <string>
 #include <cassert>
+#include <queue>
 
+#include "hexe_animation.h"
 
-#define WINDOW_WIDTH     1280
-#define WINDOW_HEIGHT     720
 
 #define WITCH_ROTATION         20.0f
-#define WITCH_FLOATING_SPEED   10           // The higher, the slower...
+#define WITCH_FLOATING_SPEED   20           // The higher, the slower...
 
 
 // static int texture_width = 1280;
@@ -33,6 +33,9 @@
 static int texture_width = 0;
 static int texture_height = 0;
 
+
+// Keeps track of all the existent snowflakes (that have not yet dispawned).
+static std::queue<Snowflake> snowflakes = {};
 
 struct SDL_Application{
 
@@ -128,31 +131,24 @@ struct SDL_Application{
     }
 
 
-    void render_snowballs(int currentFrame){
+    void render_snowflakes(int currentFrame){
+
+        // Adds a new snowflake every frame! :3
+        Snowflake mySnowflake;
+        snowflakes.push(mySnowflake);
 
 
-        class Snowball {
-            public:
 
-                float random_size         = SDL_randf() * 5;
-                float random_starting_pos = SDL_randf() * SDL_rand(25);
+        // Snowflakes rendering queue.
+        std::queue<Snowflake> snowflakes_rendering_queue(snowflakes);
 
+        for (int i = 0; i < snowflakes_rendering_queue.size(); i++){
 
-                // C++ struct (not C-styled).
-                SDL_FRect snowball_rect{
+            Snowflake currentSnowflake = snowflakes_rendering_queue.front();
+            SDL_RenderFillRect(mRenderer, &currentSnowflake.snowflake_rect);
 
-                    snowball_rect.x = (float) 0.0f,
-                    snowball_rect.y = (float) 0.0f,
-                    snowball_rect.w = (float) {random_size},    // How to render in pixels...???
-                    snowball_rect.h = (float) {random_size}    // How to render in pixels...???
-            };
-        };
-
-        Snowball mySnowball;
-
-        // SDL_RenderTexture(mRenderer, snowball_text, nullptr, nullptr);
-        // SDL_RenderFillRect(mRenderer, &snowball_rect);
-        SDL_RenderFillRect(mRenderer, &mySnowball.snowball_rect);
+            snowflakes_rendering_queue.pop();
+        }
     }
 
     void render_witch(int currentFrame){
@@ -192,8 +188,8 @@ struct SDL_Application{
 
         render_witch(currentFrame);
 
-		SDL_SetRenderDrawColor(mRenderer, 0xFF, 0xFF, 0xFF, 0xFF);      // Snowballs are white :3
-        render_snowballs(currentFrame);
+		SDL_SetRenderDrawColor(mRenderer, 0xFF, 0xFF, 0xFF, 0xFF);      // Snowflakes are white... for now :3
+        render_snowflakes(currentFrame);
         
         if (currentFrame == 0){
             my_init();
