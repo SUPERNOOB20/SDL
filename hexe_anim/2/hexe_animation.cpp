@@ -26,6 +26,9 @@
 #define WITCH_ROTATION         20.0f
 #define WITCH_FLOATING_SPEED   20           // The higher, the slower...
 
+#define SNOW_AMOUNT            2           // The higher, the less snow...
+
+
 
 // static int texture_width = 1280;
 // static int texture_height = 720;
@@ -121,7 +124,36 @@ struct SDL_Application{
 	}
 
    
-	void Update(){
+	void Update(int currentFrame){
+
+
+        // Adds a new snowflake every SNOW_AMOUNT frames! :3
+        if (currentFrame % SNOW_AMOUNT){
+            Snowflake mySnowflake;
+            snowflakes.push(mySnowflake);
+        }
+
+
+        // Snowflakes rendering queue.
+        std::queue<Snowflake> snowflakes_update_queue(snowflakes);
+
+        // Empty the snowflakes queue.
+        while (snowflakes.empty() == false){
+            snowflakes.pop();
+        }
+
+        for (int i = 0; i < snowflakes_update_queue.size(); i++) {
+
+            Snowflake currentSnowflake = snowflakes_update_queue.front();
+
+            currentSnowflake.snowflake_rect.x += 0.4f;
+            currentSnowflake.snowflake_rect.y += 1.0f;
+
+            // Fill up the snowflakes queue again.
+            snowflakes.push(currentSnowflake);
+
+            snowflakes_update_queue.pop();
+        }
 	}
 
 
@@ -132,12 +164,6 @@ struct SDL_Application{
 
 
     void render_snowflakes(int currentFrame){
-
-        // Adds a new snowflake every frame! :3
-        Snowflake mySnowflake;
-        snowflakes.push(mySnowflake);
-
-
 
         // Snowflakes rendering queue.
         std::queue<Snowflake> snowflakes_rendering_queue(snowflakes);
@@ -203,7 +229,7 @@ struct SDL_Application{
     // Every tick is one iteration of the game loop.
 	void Tick(int currentFrame){
 		Input();
-		Update();
+		Update(currentFrame);
 		Render(currentFrame);
 	}
 
