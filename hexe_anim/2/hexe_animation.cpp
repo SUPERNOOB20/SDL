@@ -160,7 +160,10 @@ struct SDL_Application{
             snowflakes.pop();
         }
 
-        for (int i = 0; i < snowflakes_update_queue.size(); i++) {
+        // Lots of snowflakes!!! 0 - 99999... snowflakes :3
+        unsigned long long int current_amount_of_snowflakes = snowflakes_update_queue.size();
+
+        for (int i = 0; i < current_amount_of_snowflakes; i++) {
 
             Snowflake currentSnowflake = snowflakes_update_queue.front();
 
