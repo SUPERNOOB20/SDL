@@ -146,7 +146,7 @@ struct SDL_Application{
         // Adds a new snowflake every SNOW_AMOUNT frames! :3
         if ((currentFrame % SNOW_AMOUNT) == 0){
             // SDL_Log("Amount of snowflakes (currently active) #1: %ld", snowflakes.size());
-            Snowflake mySnowflake;
+            const Snowflake mySnowflake{};
             snowflakes.push(mySnowflake);
         }
         

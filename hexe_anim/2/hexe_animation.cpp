@@ -167,8 +167,8 @@ struct SDL_Application{
 
             Snowflake currentSnowflake = snowflakes_update_queue.front();
 
-            currentSnowflake.snowflake_rect.x += 0.4f;
-            currentSnowflake.snowflake_rect.y += 1.0f;
+            currentSnowflake.set_x_pos((currentSnowflake.get_x_pos()) + 0.4f);
+            currentSnowflake.set_y_pos((currentSnowflake.get_y_pos()) + 1.0f);
 
             // Fill up the snowflakes queue again.
             snowflakes.push(currentSnowflake);
@@ -194,7 +194,8 @@ struct SDL_Application{
         for (int i = 0; i < snowflakes_rendering_queue.size(); i++){
 
             Snowflake currentSnowflake = snowflakes_rendering_queue.front();
-            SDL_RenderFillRect(mRenderer, &currentSnowflake.snowflake_rect);
+            // SDL_RenderFillRect(mRenderer, &currentSnowflake.snowflake_rect);
+            SDL_RenderFillRect(mRenderer, currentSnowflake.get_rect_addr());
 
             snowflakes_rendering_queue.pop();
         }
