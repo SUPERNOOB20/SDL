@@ -145,12 +145,14 @@ struct SDL_Application{
 
         // Adds a new snowflake every SNOW_AMOUNT frames! :3
         if ((currentFrame % SNOW_AMOUNT) == 0){
-            // SDL_Log("Amount of snowflakes (currently active) #1: %ld", snowflakes.size());
-            Snowflake mySnowflake;
+            Snowflake mySnowflake{1.0f};
+
+            // SDL_Log("Altitude of this stupid snowflake: %f", mySnowflake.get_y_pos());
+
             snowflakes.push(mySnowflake);
         }
-        
-        // SDL_Log("Amount of snowflakes (currently active) #1: %ld", snowflakes.size());
+
+
 
         // Snowflakes rendering queue.
         std::queue<Snowflake> snowflakes_update_queue(snowflakes);
@@ -176,7 +178,6 @@ struct SDL_Application{
             snowflakes_update_queue.pop();
             // x
         }
-        // SDL_Log("Amount of snowflakes (currently active) #1: %ld", snowflakes.size());
 	}
 
 
@@ -191,7 +192,9 @@ struct SDL_Application{
         // Snowflakes rendering queue.
         std::queue<Snowflake> snowflakes_rendering_queue(snowflakes);
 
-        for (int i = 0; i < snowflakes_rendering_queue.size(); i++){
+
+        unsigned long long int oh_god = snowflakes_rendering_queue.size();
+        for (int i = 0; i < oh_god; i++){
 
             Snowflake currentSnowflake = snowflakes_rendering_queue.front();
             // SDL_RenderFillRect(mRenderer, &currentSnowflake.snowflake_rect);

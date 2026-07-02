@@ -29,13 +29,19 @@ class Snowflake {
 
 
     public:
-        Snowflake() // constructors must be non-const
+        Snowflake(float altitude = 1.0f): // constructors must be non-const
+        snowflake_rect {random_starting_pos_x, altitude, random_size, random_size}        
+
+
+        // okay to modify members in non-const constructor
+               
+        // snowflake_rect.x { random_starting_pos_x },
+        // snowflake_rect.y { altitude },                                               // Spawn the snowflakes near the top of the screen.
+        // snowflake_rect.w { random_size },
+        // snowflake_rect.h { random_size }
+
+
         {
-            // okay to modify members in non-const constructor
-            snowflake_rect.x = (float) random_starting_pos_x;
-            snowflake_rect.y = (float) 1.0f;                                               // Spawn the snowflakes near the top of the screen.
-            snowflake_rect.w = (float) random_size;
-            snowflake_rect.h = (float) random_size;
         }
 
          // Setters
