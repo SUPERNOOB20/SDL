@@ -120,7 +120,7 @@ struct SDL_Application{
                     SDL_Quit();
                 } else if (event.button.button == 80){
 
-                    SDL_Log("Amount of snowflakes (currently active) #2: %ld", snowflakes.size());
+                    // SDL_Log("Amount of snowflakes (currently active) #2: %ld", snowflakes.size());
 
                     /*
                     SDL_Log("\n");
@@ -138,6 +138,28 @@ struct SDL_Application{
             }
 		}
 	}
+
+
+    // Remove from the rendering queue any snowflakes that have gone offscreen.
+    // That should free up their previously allocated memory... I hope.
+    void despawn(){
+
+        unsigned long long int current_amount_of_snowflakes = snowflakes.size();
+
+        // Please notice that this "in-place" operation works as intended
+        // only because we're using a FIFO queue...
+        // (LIFO queues would require a copy for this exact same approach to work...)
+        for (int i = 0; i < current_amount_of_snowflakes; i++) {
+
+            Snowflake currentSnowflake = snowflakes.front();
+
+            // The 20.0f here is an arbitrary offset just to stay safe
+            // (even though I believe pos is top left anchored so even 0.0f should already be safe enough).
+            if ((currentSnowflake.get_x_pos() > WINDOW_WIDTH + 20.0f) || (currentSnowflake.get_y_pos() > WINDOW_HEIGHT + 20.0f)){       
+                snowflakes.pop();                          // Snowflake is offscreen -       despawn it.
+            }
+        }
+    }
 
    
 	void Update(int currentFrame){
@@ -165,6 +187,11 @@ struct SDL_Application{
         // Lots of snowflakes!!! 0 - 99999... snowflakes :3
         unsigned long long int current_amount_of_snowflakes = snowflakes_update_queue.size();
 
+        // SDL_Log("\n");
+    
+        // SDL_Log("snowflakes size: %ld", snowflakes.size());
+        // SDL_Log("snowflakes copy size: %ld", snowflakes_update_queue.size());
+
         for (int i = 0; i < current_amount_of_snowflakes; i++) {
 
             Snowflake currentSnowflake = snowflakes_update_queue.front();
@@ -176,8 +203,15 @@ struct SDL_Application{
             snowflakes.push(currentSnowflake);
 
             snowflakes_update_queue.pop();
-            // x
         }
+
+        // SDL_Log("snowflakes size: %ld", snowflakes.size());
+        // SDL_Log("snowflakes copy size: %ld", snowflakes_update_queue.size());
+
+        // SDL_Log("\n");
+
+        despawn();
+
 	}
 
 
@@ -193,8 +227,7 @@ struct SDL_Application{
         std::queue<Snowflake> snowflakes_rendering_queue(snowflakes);
 
 
-        unsigned long long int oh_god = snowflakes_rendering_queue.size();
-        for (int i = 0; i < oh_god; i++){
+        while (snowflakes_rendering_queue.empty() == false) {
 
             Snowflake currentSnowflake = snowflakes_rendering_queue.front();
             // SDL_RenderFillRect(mRenderer, &currentSnowflake.snowflake_rect);
@@ -272,9 +305,15 @@ struct SDL_Application{
             currentFrame++;
 			fps++;
 
+            SDL_Log("current frame:%ld", currentFrame);
+            SDL_Log("Amount of snowflakes (currently active) #2: %ld", snowflakes.size());
+
 			Uint64 deltaTime = SDL_GetTicks() - currentTick;
             
-            SDL_Delay(16.666666 - deltaTime);       // Homemade VSync...            
+            // Should be quite safe to assume deltaTime >= 0...
+            if (deltaTime < 16.666666){    
+                SDL_Delay(16.666666 - deltaTime);       // Homemade VSync...            
+            }
 
 			if (currentTick > lastTime + 1000) {
 				lastTime = currentTick;
@@ -283,6 +322,11 @@ struct SDL_Application{
 				SDL_SetWindowTitle(mWindow, title.c_str());
 				fps = 0;
 			}
+
+            // if (currentFrame > 7) {
+               // running = false;
+            // }
+
 		}
 	}
 };
