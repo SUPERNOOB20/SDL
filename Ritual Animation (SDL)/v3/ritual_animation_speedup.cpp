@@ -1,5 +1,9 @@
-// Credits to Mike Shah  -  https://youtu.be/yZl9X47cHi8
-// g++ demo.cpp -O3 -o rgb_demo `pkg-config --libs --cflags sdl3`
+// Credits to Mike Shah:  https://youtu.be/yZl9X47cHi8
+// Credits to SDL3 source code: 08-rotating-textures/rotating-textures.c
+
+// .
+
+// g++ ritual_animation.cpp -O3 -o anim `pkg-config --libs --cflags sdl3`
 
 // .
 // .
@@ -13,21 +17,37 @@
 #define WINDOW_WIDTH   1024
 #define WINDOW_HEIGHT   680
 
-// #define ANIMATION_SPEED     1500         // In miliseconds.
-#define ANIMATION_SPEED     500         // In miliseconds.
+// #define CANDLE_ANIMATION_SPEED     1500         // In miliseconds.
+#define CANDLE_ANIMATION_SPEED     350         // In miliseconds.
+#define PENTAGRAM_ANIMATION_SPEED  6000
 
+// Eyeballed candle positions... e.e
+#define ANCHOR1X 120
+#define ANCHOR1Y 20
+#define ANCHOR2X 815
+#define ANCHOR2Y 450
 
 static int texture_width = 0;
 static int texture_height = 0;
 
+static int pentagram_texture_width = 0;
+static int pentagram_texture_height = 0;
+
 
 struct SDL_Application{
 
+    double acum = 2000; 
+    float pentagram_opacity = 135.0f;
+
     SDL_Window* mWindow;
     SDL_Renderer* mRenderer;
+
     SDL_Texture* candleTexture1;
     SDL_Texture* candleTexture2;
     SDL_Texture* candleTexture3;
+
+    SDL_Texture* pentagramTexture;
+
     
     bool running = true;
 
@@ -39,7 +59,7 @@ struct SDL_Application{
 	    mWindow = SDL_CreateWindow(title, WINDOW_WIDTH, WINDOW_HEIGHT, 0);    
 	    mRenderer = SDL_CreateRenderer(mWindow, nullptr);
 	    if (mRenderer == nullptr){
-		    assert (0 && "ERROR: Hardware acceleration not supported :c");
+		    assert (0 && "ERROR 0: Hardware acceleration not supported :c");
 	    } else {
 		    SDL_Log("Current renderer: %s", SDL_GetRendererName(mRenderer));
 		    SDL_Log("Available renderer drivers:");
@@ -47,30 +67,43 @@ struct SDL_Application{
 			    SDL_Log("%d, %s", i + 1, SDL_GetRenderDriver(i));
 		    }
     
-            //  I don't want resized candles!!!  3:<
+            //  I don't want stretched assets!!!  3:<
             SDL_SetRenderLogicalPresentation(mRenderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_DISABLED);
 	    }
 
 	    SDL_Surface* surfaceCandle1 = SDL_LoadPNG("./candle_f1.png");
 	    SDL_Surface* surfaceCandle2 = SDL_LoadPNG("./candle_f2.png");
 	    SDL_Surface* surfaceCandle3 = SDL_LoadPNG("./candle_f3.png");
+
+	    SDL_Surface* surfacePentagram = SDL_LoadPNG("./pentagram_v1_cropped.png");
+
 	    if ((surfaceCandle1 == nullptr) || (surfaceCandle2 == nullptr) || (surfaceCandle3 == nullptr)) {
-		    assert(0 && "ERROR: File not found :c");
+		    assert(0 && "ERROR 1: Candle images files not found :c");
+	    }
+
+	    if (surfacePentagram == nullptr) {
+		    assert(0 && "ERROR 2: Pentagram image file not found :c");
 	    }
 
 	    candleTexture1 = SDL_CreateTextureFromSurface(mRenderer, surfaceCandle1);
 	    candleTexture2 = SDL_CreateTextureFromSurface(mRenderer, surfaceCandle2);
 	    candleTexture3 = SDL_CreateTextureFromSurface(mRenderer, surfaceCandle3);
 
+        pentagramTexture = SDL_CreateTextureFromSurface(mRenderer, surfacePentagram);
 
         //  All candles have the same resolution so I don't really care about assigning the same w and h to all of them.
         texture_width  = surfaceCandle1 -> w;
         texture_height = surfaceCandle1 -> h;
 
+        pentagram_texture_width  = surfacePentagram -> w;
+        pentagram_texture_height = surfacePentagram -> h;
+
 
         SDL_DestroySurface(surfaceCandle1);
         SDL_DestroySurface(surfaceCandle2);
         SDL_DestroySurface(surfaceCandle3);
+
+        SDL_DestroySurface(surfacePentagram);
 
     }
 	// Destructor
@@ -90,9 +123,16 @@ struct SDL_Application{
 		SDL_Event event;
 
 		while (SDL_PollEvent(&event)){
-			if (event.type == SDL_EVENT_QUIT){
+			if (event.type == SDL_EVENT_QUIT) {
 				running = false;
-			}
+			} else if (event.type == SDL_EVENT_KEY_DOWN) {
+
+                // SDL_Log("CONGRATULA!!! You pressed the %d key :3)7", event.button.button);
+
+                if (event.button.button == 41){          // 41 is the escape key       (you can remap it if you want :3)
+                    SDL_Quit();
+                }
+            }
 		}
 	}
     
@@ -110,8 +150,8 @@ struct SDL_Application{
 
         SDL_FRect dst_rect_candle1;
 
-        dst_rect_candle1.x = 0.0f;
-        dst_rect_candle1.y = 0.0f;
+        dst_rect_candle1.x = ANCHOR1X;
+        dst_rect_candle1.y = ANCHOR1Y;
         dst_rect_candle1.w = (float) texture_width;
         dst_rect_candle1.h = (float) texture_height;
 
@@ -119,8 +159,8 @@ struct SDL_Application{
 
         SDL_FRect dst_rect_candle2;
 
-        dst_rect_candle2.x = 700.0f;
-        dst_rect_candle2.y = 0.0f;
+        dst_rect_candle2.x = ANCHOR2X;
+        dst_rect_candle2.y = ANCHOR1Y;
         dst_rect_candle2.w = (float) texture_width;
         dst_rect_candle2.h = (float) texture_height;
 
@@ -128,8 +168,8 @@ struct SDL_Application{
 
         SDL_FRect dst_rect_candle3;
 
-        dst_rect_candle3.x = 0.0f;
-        dst_rect_candle3.y = 400.0f;
+        dst_rect_candle3.x = ANCHOR1X;
+        dst_rect_candle3.y = ANCHOR2Y;
         dst_rect_candle3.w = (float) texture_width;
         dst_rect_candle3.h = (float) texture_height;
 
@@ -137,8 +177,8 @@ struct SDL_Application{
 
         SDL_FRect dst_rect_candle4;
 
-        dst_rect_candle4.x = 700.0f;
-        dst_rect_candle4.y = 400.0f;
+        dst_rect_candle4.x = ANCHOR2X;
+        dst_rect_candle4.y = ANCHOR2Y;
         dst_rect_candle4.w = (float) texture_width;
         dst_rect_candle4.h = (float) texture_height;
 
@@ -152,18 +192,18 @@ struct SDL_Application{
         SDL_FRect* candles[] = {&dst_rect_candle1, &dst_rect_candle2, &dst_rect_candle3, &dst_rect_candle4};
         int number_of_candles = 4;              // Array size.    
 
-        // float chosen_animation_speed = ANIMATION_SPEED;
+
 
         int current_anim_frame = -1;
 
-        if ((currentTick % ((int) (ANIMATION_SPEED))) < ((int) (ANIMATION_SPEED / 3.0f))) {
+        if ((currentTick % ((int) (CANDLE_ANIMATION_SPEED))) < ((int) (CANDLE_ANIMATION_SPEED / 3.0f))) {
 
             current_anim_frame = 0;
 
-        } else if ((currentTick % ((int) (ANIMATION_SPEED))) < ((int) (ANIMATION_SPEED * 2.0f / 3.0f))) {
+        } else if ((currentTick % ((int) (CANDLE_ANIMATION_SPEED))) < ((int) (CANDLE_ANIMATION_SPEED * 2.0f / 3.0f))) {
 	    	current_anim_frame = 1;
 
-        } else {           // if ((currentTick % ((int) (ANIMATION_SPEED))) < ((int) (ANIMATION_SPEED * 3.0f / 3.0f)))
+        } else {           // if ((currentTick % ((int) (CANDLE_ANIMATION_SPEED))) < ((int) (CANDLE_ANIMATION_SPEED * 3.0f / 3.0f)))
             current_anim_frame = 2;
         }
 
@@ -173,6 +213,57 @@ struct SDL_Application{
         }
 
 
+
+
+        SDL_FPoint pentagram_center;
+        SDL_FRect p_dst_rect;
+
+        if (currentTick < 2500){
+            acum += 0.4;
+        } else if (currentTick > 3500) {
+            // acum = SDL_sqrt(acum);
+            acum = acum / 1.006;
+            SDL_Log("acum: %f", acum);
+            if (pentagram_opacity > 2.0f) {
+                pentagram_opacity -= 2.0f;
+            }
+        }
+
+
+        const float rotation = (((float) ((int) (currentTick % (int)(acum)))) / ((float) acum)) * 360.0f;
+
+
+        /* Center this one, and draw it with some rotation so it spins! */
+        p_dst_rect.x = ((float) (WINDOW_WIDTH  - pentagram_texture_width))  / 2.0f;
+        p_dst_rect.y = ((float) (WINDOW_HEIGHT - pentagram_texture_height)) / 2.0f;
+        p_dst_rect.w = (float)   pentagram_texture_width;
+        p_dst_rect.h = (float)   pentagram_texture_height;
+
+        /* rotate it around the center of the texture; you can rotate it from a different point, too! */
+        pentagram_center.x = pentagram_texture_width  / 2.0f;
+        pentagram_center.y = pentagram_texture_height / 2.0f;
+
+
+        // TODO: Make a black rectangle on top and animate opacity for brightness effect.
+        SDL_RenderTextureRotated(mRenderer, pentagramTexture, NULL, &p_dst_rect, rotation, &pentagram_center, SDL_FLIP_NONE);
+
+
+
+
+
+        SDL_FRect pentagram_shade_dst_rect;
+
+        pentagram_shade_dst_rect.x = (float) WINDOW_WIDTH / 5.10f;
+        pentagram_shade_dst_rect.y = (float) 0;
+        pentagram_shade_dst_rect.w = (float) WINDOW_WIDTH / 1.65f;
+        pentagram_shade_dst_rect.h = (float) WINDOW_HEIGHT;
+
+
+        SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_MUL);
+		// SDL_RenderPresent(mRenderer);
+
+		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, pentagram_opacity);
+		SDL_RenderFillRect(mRenderer, &pentagram_shade_dst_rect);
 
 		// draw other things here ...
 		
@@ -223,4 +314,5 @@ int main(int argc, char* argv[]){
 	app.MainLoop();
 	return 0;
 }
+
 

@@ -116,24 +116,14 @@ struct SDL_Application{
 
                 // SDL_Log("CONGRATULA!!! You pressed the %d key :3)7", event.button.button);
 
-                if (event.button.button == 41){     // 41 is the escape button (you can remap it if you want :3)
+                if (event.button.button == 41){          // 41 is the escape key       (you can remap it if you want :3)
                     SDL_Quit();
-                } else if (event.button.button == 80){
-
-                    // SDL_Log("Amount of snowflakes (currently active) #2: %ld", snowflakes.size());
-
-                    /*
-                    SDL_Log("\n");
-                    SDL_Log("Snowflakes queue: ");
-                    std::queue<Snowflake> printable_queue(snowflakes);
-
-                    while (printable_queue.empty() == false){
-                        Snowflake current_snowflake = snowflakes.front();
-                        SDL_Log("    current snowflake: (%f, %f)", current_snowflake.snowflake_rect.x, current_snowflake.snowflake_rect.y);
-                        snowflakes.pop();
-                    }
-                    SDL_Log("\n");
-                    */
+                } else if (event.button.button == 80){   // 80 is the left arrow key   (you can remap it if you want :3)
+    
+                    // SDL_Log("\n");
+                    // SDL_Log("Current frame:%ld", currentFrame);
+                    // SDL_Log("Amount of snowflakes (currently active) #2: %ld", snowflakes.size());                    
+                    // SDL_Log("\n");
                 }
             }
 		}
@@ -304,9 +294,6 @@ struct SDL_Application{
 			Tick(currentFrame);
             currentFrame++;
 			fps++;
-
-            SDL_Log("current frame:%ld", currentFrame);
-            SDL_Log("Amount of snowflakes (currently active) #2: %ld", snowflakes.size());
 
 			Uint64 deltaTime = SDL_GetTicks() - currentTick;
             

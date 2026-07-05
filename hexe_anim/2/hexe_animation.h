@@ -12,8 +12,9 @@ class Snowflake {
 
         float random_size            =  1 + SDL_randf() * 5;                                                  // Each snowflake is between 1px and 6px of width and height.
 
-        float random_pos_x           =  SDL_randf() * SDL_rand(WINDOW_WIDTH);                                 // Each snowflake spawns between 0px and WINDOW_WIDTHpx horizontally.
-        float random_starting_pos_x  =  random_pos_x                            - (WINDOW_WIDTH / 8);         // Eye-balled adjustment for horizontal movement...
+        float random_pos_x           =  SDL_randf() * SDL_rand(WINDOW_WIDTH) * 2.0f;                                 // Each snowflake spawns between 0px and WINDOW_WIDTHpx horizontally.
+        float random_starting_pos_x  =  random_pos_x                                 - (WINDOW_WIDTH / 2);           // Eye-balled adjustment for horizontal movement...
+        // ^  Essentially these two lines make it so that the snowfall is twice as wide as your window width, and also centered on your window.
 
 
 
