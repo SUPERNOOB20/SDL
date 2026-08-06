@@ -136,6 +136,7 @@ struct SDL_Application{
 
    
 	void Update(int currentTick){
+        check_collisions()
 	}
 
 
